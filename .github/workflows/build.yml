@@ -36,12 +36,10 @@ jobs:
         # On Mac and Windows this leads to a conflict.
         run: |
           cd "${{github.workspace}}/double-conversion"
-          mkdir cmake-build && cd cmake-build && mkdir cmake-installation
-          cd "${{github.workspace}}/double-conversion"
           cmake -DBUILD_TESTING=OFF \
             -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DCMAKE_INSTALL_PREFIX:PATH="cmake-build/cmake-installation" \
+            -DCMAKE_INSTALL_PREFIX:PATH="${{github.workspace}}/double-conversion/cmake-build/cmake-installation" \
             -DBUILD_SHARED_LIBS=OFF \
             -B./cmake-build
             
