@@ -1,0 +1,100 @@
+name: cpp-cmake-prebuilt-release-actions-workflow
+
+on: push
+
+jobs:
+  build:
+    env:
+      libraryName: double-conversion
+      tagName: v3.2.1
+      mingwTargetZip: double-conversion-${{ github.ref_name }}-x86_64-posix-seh-rev0-8.1.0.zip
+    strategy:
+      matrix:
+        container: [ ubuntu-latest, macos-latest, windows-latest ]
+        build_type: [ Release ]
+
+
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ${{ matrix.container }}
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: git clone
+        shell: bash
+        run: git clone --recursive https://github.com/google/double-conversion.git && cd double-conversion && git checkout ${{ env.tagName }}
+
+      - if: ${{ matrix.container != 'windows-latest' }}
+        name: Configure
+        shell: bash
+        # Configure CMake in a 'buildX' subdirectory.
+        # We can't use `build` as `BUILD` is already taken by the bazel build file.
+        # On Mac and Windows this leads to a conflict.
+        run: |
+          cd double-conversion
+          cmake -DBUILD_TESTING=ON \
+            -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_INSTALL_PREFIX:PATH="cmake-build/cmake-installation" \
+            -DBUILD_SHARED_LIBS=OFF
+            
+      - if: ${{ matrix.container == 'windows-latest' }}
+        name: Configure for windows (x86_64-posix-seh-rev0-8.1.0)
+        shell: bash
+        # Configure CMake in a 'buildX' subdirectory.
+        # We can't use `build` as `BUILD` is already taken by the bazel build file.
+        # On Mac and Windows this leads to a conflict.
+        run: |
+          gcc --version
+          cd double-conversion
+          cmake -G"MinGW Makefiles" -DBUILD_TESTING=ON \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_INSTALL_PREFIX:PATH="cmake-build/cmake-installation" \
+            -DBUILD_SHARED_LIBS=OFF
+            
+#      - name: Build shared
+#        run: |
+#          cmake --build buildX --config ${{ matrix.build_type }}
+#      - name: Install shared
+#        run: |
+#          cmake --install buildX --config ${{ matrix.build_type }}
+
+      - name: Build and install static
+        run: |
+          cd double-conversion/cmake-build
+          cmake -DBUILD_SHARED_LIBS=OFF buildX
+          cmake --build . --config ${{ matrix.build_type }} &&  cmake --install . --config ${{ matrix.build_type }}
+          
+      - if: ${{ matrix.container != 'windows-latest' }}
+        name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          directory: "double-conversion/cmake-build/cmake-installation"
+          filename: double-conversion-${{ github.ref_name }}.zip
+        
+      - if: ${{ matrix.container == 'windows-latest' }}
+        name: Archive Release for Windows
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          directory: "double-conversion/cmake-build/cmake-installation"
+          filename: double-conversion-${{ github.ref_name }}-x86_64-posix-seh-rev0-8.1.0.zip
+          
+      - if: ${{ matrix.container != 'windows-latest' }}
+        name: Release prebuilt
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "cmake-build/cmake-installation/double-conversion-${{ github.ref_name }}.zip"
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - if: ${{ matrix.container == 'windows-latest' }}
+        name: Release prebuilt for Windows
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "cmake-build/cmake-installation/double-conversion-${{ github.ref_name }}-x86_64-posix-seh-rev0-8.1.0.zip"
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
