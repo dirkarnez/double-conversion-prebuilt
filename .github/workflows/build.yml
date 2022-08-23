@@ -35,8 +35,8 @@ jobs:
         # We can't use `build` as `BUILD` is already taken by the bazel build file.
         # On Mac and Windows this leads to a conflict.
         run: |
-          cd double-conversion
-          cmake -DBUILD_TESTING=ON \
+          cd "${{github.workspace}}/double-conversion"
+          cmake -DBUILD_TESTING=OFF \
             -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_INSTALL_PREFIX:PATH="cmake-build/cmake-installation" \
@@ -51,8 +51,8 @@ jobs:
         # On Mac and Windows this leads to a conflict.
         run: |
           gcc --version
-          cd double-conversion
-          cmake -G"MinGW Makefiles" -DBUILD_TESTING=ON \
+          cd "${{github.workspace}}/double-conversion"
+          cmake -G"MinGW Makefiles" -DBUILD_TESTING=OFF \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_INSTALL_PREFIX:PATH="cmake-build/cmake-installation" \
             -DBUILD_SHARED_LIBS=OFF \
@@ -67,7 +67,7 @@ jobs:
 
       - name: Build and install static
         run: |
-          cd double-conversion/cmake-build
+          cd ${{github.workspace}}/double-conversion/cmake-build
           cmake -DBUILD_SHARED_LIBS=OFF .
           cmake --build . --config ${{ matrix.build_type }} &&  cmake --install . --config ${{ matrix.build_type }}
           
@@ -76,7 +76,7 @@ jobs:
         uses: thedoctor0/zip-release@master
         with:
           type: 'zip'
-          directory: "double-conversion/cmake-build/cmake-installation"
+          directory: "${{github.workspace}}/double-conversion/cmake-build/cmake-installation"
           filename: double-conversion-${{ github.ref_name }}.zip
         
       - if: ${{ matrix.container == 'windows-latest' }}
@@ -84,14 +84,14 @@ jobs:
         uses: thedoctor0/zip-release@master
         with:
           type: 'zip'
-          directory: "double-conversion/cmake-build/cmake-installation"
+          directory: "${{github.workspace}}/double-conversion/cmake-build/cmake-installation"
           filename: double-conversion-${{ github.ref_name }}-x86_64-posix-seh-rev0-8.1.0.zip
           
       - if: ${{ matrix.container != 'windows-latest' }}
         name: Release prebuilt
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "double-conversion/cmake-build/cmake-installation/double-conversion-${{ github.ref_name }}.zip"
+          artifacts: "${{github.workspace}}/double-conversion/cmake-build/cmake-installation/double-conversion-${{ github.ref_name }}.zip"
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
           
@@ -99,6 +99,6 @@ jobs:
         name: Release prebuilt for Windows
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "double-conversion/cmake-build/cmake-installation/double-conversion-${{ github.ref_name }}-x86_64-posix-seh-rev0-8.1.0.zip"
+          artifacts: "${{github.workspace}}/double-conversion/cmake-build/cmake-installation/double-conversion-${{ github.ref_name }}-x86_64-posix-seh-rev0-8.1.0.zip"
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
