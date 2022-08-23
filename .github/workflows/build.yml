@@ -69,7 +69,6 @@ jobs:
       - name: Build and install static
         run: |
           cd ${{github.workspace}}/double-conversion/cmake-build
-          cmake -DBUILD_SHARED_LIBS=OFF .
           cmake --build . --config ${{ matrix.build_type }} &&  cmake --install . --config ${{ matrix.build_type }}
           
       - if: ${{ matrix.container != 'windows-latest' }}
