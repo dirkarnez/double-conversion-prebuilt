@@ -68,7 +68,7 @@ jobs:
       - name: Build and install static
         run: |
           cd double-conversion/cmake-build
-          cmake -DBUILD_SHARED_LIBS=OFF buildX
+          cmake -DBUILD_SHARED_LIBS=OFF .
           cmake --build . --config ${{ matrix.build_type }} &&  cmake --install . --config ${{ matrix.build_type }}
           
       - if: ${{ matrix.container != 'windows-latest' }}
@@ -91,7 +91,7 @@ jobs:
         name: Release prebuilt
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "cmake-build/cmake-installation/double-conversion-${{ github.ref_name }}.zip"
+          artifacts: "double-conversion/cmake-build/cmake-installation/double-conversion-${{ github.ref_name }}.zip"
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
           
@@ -99,6 +99,6 @@ jobs:
         name: Release prebuilt for Windows
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "cmake-build/cmake-installation/double-conversion-${{ github.ref_name }}-x86_64-posix-seh-rev0-8.1.0.zip"
+          artifacts: "double-conversion/cmake-build/cmake-installation/double-conversion-${{ github.ref_name }}-x86_64-posix-seh-rev0-8.1.0.zip"
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
