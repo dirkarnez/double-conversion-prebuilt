@@ -54,7 +54,7 @@ jobs:
           cd "${{github.workspace}}/double-conversion"
           cmake -G"MinGW Makefiles" -DBUILD_TESTING=OFF \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DCMAKE_INSTALL_PREFIX:PATH="cmake-build/cmake-installation" \
+            -DCMAKE_INSTALL_PREFIX:PATH="${{github.workspace}}/double-conversion/cmake-build/cmake-installation" \
             -DBUILD_SHARED_LIBS=OFF \
             -B./cmake-build
             
