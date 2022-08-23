@@ -43,10 +43,11 @@ jobs:
             -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_INSTALL_PREFIX:PATH="cmake-build/cmake-installation" \
-            -DBUILD_SHARED_LIBS=OFF
+            -DBUILD_SHARED_LIBS=OFF \
+            -B./cmake-build
             
       - if: ${{ matrix.container == 'windows-latest' }}
-        name: Configure for windows (x86_64-posix-seh-rev0-8.1.0)
+        name: Configure for windows (MinGW Makefiles, x86_64-posix-seh-rev0-8.1.0)
         shell: bash
         # Configure CMake in a 'buildX' subdirectory.
         # We can't use `build` as `BUILD` is already taken by the bazel build file.
@@ -57,7 +58,8 @@ jobs:
           cmake -G"MinGW Makefiles" -DBUILD_TESTING=ON \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_INSTALL_PREFIX:PATH="cmake-build/cmake-installation" \
-            -DBUILD_SHARED_LIBS=OFF
+            -DBUILD_SHARED_LIBS=OFF \
+            -B./cmake-build
             
 #      - name: Build shared
 #        run: |
